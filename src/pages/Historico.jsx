@@ -1,49 +1,56 @@
-import React, { useState } from "react";
-import {
-  Formik,
-  Form,
-  Field,
-  ErrorMessage,
-  FieldArray,
-  useFormik,
-} from "formik";
+// import { useFormik } from 'Formik'
+import { Formik, Form, Field } from "formik";
 
 function Historico() {
-  const [prod, setProd] = useState([]);
-
-  const addProd = (producto) => {
-    setProd(p => [...p, producto]);
+  const initialValues = {
+    prueba: "",
+    email: "",
+    cita: ""
   };
 
-  console.log(prod);
+  const reset = (setFieldValue) => {
+    setFieldValue("prueba", "");
+    setFieldValue("email", "");
+    setFieldValue("cita", "0");
+
+  };
 
   return (
     <>
-      <Formik
-        initialValues={{
-            name: '',
-            email: ''
-        }}
-        onSubmit={(values) => {
-        //   console.log(values);
-        }}
-      >
-        {(data) => {
-            // console.log(data.values);
+      <Formik initialValues={initialValues}>
+        {({ values, setFieldValue, handleChange }) => {
+          console.log(values)
           return (
             <Form>
-              <Field name="name" id="name" type="text" />
-              <Field name="email" id="email" type="text" />
+              <Field
+                id="prueba"
+                name="prueba"
+                className="mt-2 p-2 block w-full bg-gray-50"
+              />
+              <Field
+                id="email"
+                name="email"
+                className="mt-2 p-2 block w-full bg-gray-50"
+              />
+              <Field
+                id="cita"
+                name="cita"
+                as={"select"}
+                onChange={handleChange}
+                className="mt-2 p-2 block w-full bg-gray-50"
+              >
+                <option value='0'>Seleccionar ciudad</option>
+                <option value='ro'>Roma</option>
+                <option value='mi'>Milan</option>
+                <option value='na'>Napoles</option>
+                <option value='na'>Napoles</option>
+
+              </Field>
               <button
                 type="button"
-                onClick={() =>
-                  addProd({
-                    name: data.values.name,
-                    email: data.values.email,
-                  })
-                }
+                onClick={(e) => reset(setFieldValue)}
               >
-                Enviar
+                Agregar
               </button>
             </Form>
           );

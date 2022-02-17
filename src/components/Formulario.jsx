@@ -1,21 +1,52 @@
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 
 import * as Yup from "yup";
 import CargaProducto from "./CargaProducto";
 
 function Formulario() {
   const [productos, setProductos] = useState([]);
+  let remito = {};
 
-  const addProducto = (prod) => {
-    setProductos((p) => [...p, prod]);
-    // setFieldValue("descripcion", "");
+  let indice = 0;
+
+  const addProducto = async (prod, setFieldValue) => {
+    productos.length > 0
+      ? (indice = productos[productos.length - 1].id + 1)
+      : (indice = 1);
+    await setProductos((p) => [
+      ...p,
+      {
+        id: indice,
+        cantidad: prod.cantidad,
+        descripcion: prod.descripcion,
+        numeroSerie: prod.numeroSerie,
+      },
+    ]);
+    resetProducto(setFieldValue);
+  };
+
+  const resetProducto = (setFieldValue) => {
+    setFieldValue("cantidad", "0");
+    setFieldValue("descripcion", "");
+    setFieldValue("numeroSerie", "");
+  };
+
+  const removeProducto = (id) => {
+    let aux = productos.filter((p) => p.id != id);
+    setProductos(aux);
   };
 
   const initialValues = {
+    origen: "0",
+    sedeDestino: "0",
+    tecnico: "0",
+    traslado: "0",
+    solicitante: "",
     cantidad: 0,
     descripcion: "",
     numeroSerie: "",
+    prestamo: "",
   };
 
   const sedes = [
@@ -46,13 +77,31 @@ function Formulario() {
       name: "Matias Iocco",
     },
   ];
+
   return (
     <div className="bg-white mt-10 px-5 py-10 rounded-md shadow-md md:w-11/12 mx-auto">
       <h2 className="text-2xl">Completar los campos</h2>
 
-      <Formik enableReinitialize={true} initialValues={initialValues}>
-        {(data, handleReset) => {
-        //   console.log(productos);
+      <Formik
+        initialValues={initialValues}
+        onSubmit={(values) => {
+          console.log(values.prestamo)
+          remito = {
+            encabesado: {
+              origen: values.origen,
+              destino: values.sedeDestino,
+              tecnico: values.tecnico,
+              traslado: values.traslado,
+              solicitante: values.solicitante,
+              prestamo: values.prestamo,
+            },
+            productos,
+          };
+
+          console.log(remito);
+        }}
+      >
+        {({ values, handleChange, setFieldValue }) => {
           return (
             <Form name="cargaProductos">
               <div className="px-5 py-8 flex flex-row">
@@ -64,6 +113,7 @@ function Formulario() {
                     id="origen"
                     name="origen"
                     as="select"
+                    onChange={handleChange}
                     className="mt-2 p-2 block w-full bg-gray-50"
                   >
                     <option value="0">Seleccionar origen</option>
@@ -84,6 +134,7 @@ function Formulario() {
                     id="sedeDestino"
                     name="sedeDestino"
                     as="select"
+                    onChange={handleChange}
                     className="mt-2 p-2 block w-full bg-gray-50"
                   >
                     <option value="0">Seleccionar destino</option>
@@ -107,8 +158,10 @@ function Formulario() {
                     id="tecnico"
                     name="tecnico"
                     as="select"
+                    onChange={handleChange}
                     className="mt-2 p-2 block w-full bg-gray-50"
                   >
+                    <option value="0">Seleccionar tecnico responsable</option>
                     {tecnicos.map((tecnico) => {
                       return (
                         <option key={tecnico.id} value={tecnico.id}>
@@ -126,8 +179,10 @@ function Formulario() {
                     id="traslado"
                     name="traslado"
                     as="select"
+                    onChange={handleChange}
                     className="mt-2 p-2 block w-full bg-gray-50"
                   >
+                    <option value="0">Seleccionar persona de traslado</option>
                     {tecnicos.map((tecnico) => {
                       return (
                         <option key={tecnico.id} value={tecnico.id}>
@@ -157,8 +212,8 @@ function Formulario() {
                     <Field
                       className="form-radio m-4 p-2 w-5"
                       name="prestamo"
-                      type="Radio"
-                      value="si"
+                      type="radio"
+                      value="no"
                     />
                     Si
                   </label>
@@ -166,44 +221,37 @@ function Formulario() {
                     <Field
                       className="form-radio m-4 p-2 w-5"
                       name="prestamo"
-                      type="Radio"
-                      value="no"
-                      defaultChecked
+                      type="radio"
+                      value="si"
                     />
                     No
                   </label>
+                              {/* <label>
+              <Field type="radio" name="prestamo" value="One" />
+              One
+            </label>
+            <label>
+              <Field type="radio" name="prestamo" value="Two" />
+              Two
+            </label> */}
                 </div>
               </div>
 
               <CargaProducto
-                data={data}
+                values={values}
+                productos={productos}
+                handleChange={handleChange}
                 addProducto={addProducto}
-                initialValues={initialValues}
-                handleReset={handleReset}
+                removeProducto={removeProducto}
+                setFieldValue={setFieldValue}
               />
 
-              {/* TABLE DE PRODUCTOS */}
-
-              <table class="m-10 table-fixed w-10/12">
-                <thead>
-                  <tr>
-                    <th class="w-1/12 px-4 py-2">Cantidad</th>
-                    <th class="w-7/12 px-4 py-2">Descripción</th>
-                    <th class="w-3/12 px-4 py-2">Número de serie</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productos.map((p) => {
-                    return (
-                      <tr>
-                        <td class="border w-1/12 px-4 py-2">{p.cantidad}</td>
-                        <td class="border w-7/12 px-4 py-2">{p.descripcion}</td>
-                        <td class="border w-3/12 px-4 py-2">{p.numeroSerie}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <button
+                className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+                type="submit"
+              >
+                Ingrsar productos
+              </button>
             </Form>
           );
         }}
